@@ -70,7 +70,10 @@ app.get("/signout", (req, res) => {
 });
 
 app.post("/signin", (req, res) => {
-  if (req.body.email === database.users[0].email && req.body.password === database.users[0].password) {
+  if (
+    req.body.email === database.users[0].email &&
+    req.body.password === database.users[0].password
+  ) {
     res.json("success");
   } else {
     res.status(400).json("error login in");
@@ -130,6 +133,27 @@ app.post("/connexion", async (req, res) => {
   return res.send({ user, token: token });
 });
 
+//add compte
+app.post("/submit-form", (req, res) => {
+  const idCompte = uuidv4();
+  console.log(idCompte);
+
+  const { nom, prenom, email, password, dateDeNaissance } = req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
+
+  const sqlQuery =
+    "INSERT INTO compte (id_compte, nom, prenom, motdepasse, datedenaissance, email) VALUES ($1, $2, $3, $4, $5, $6)";
+  const values = [idCompte, nom, prenom, password, dateDeNaissance, email];
+
+  client.query(sqlQuery, values, (err, result) => {
+    if (err) {
+      console.error("Erreur lors de l'insertion des données :", err);
+      res.status(500).send("Erreur lors de l'insertion des données");
+    } else {
+      res.status(200).json({ message: "Connexion full", idCompte });
+    }
+  });
+});
+
 // GARDIEN
 app.use((req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -164,7 +188,10 @@ app.get("/api/tasks", async (req, res) => {
   const id_compte = req.user.id_compte;
 
   try {
-    const result = await client.query("SELECT * FROM taches WHERE id_compte = $1 ORDER BY titre", [id_compte]);
+    const result = await client.query(
+      "SELECT * FROM taches WHERE id_compte = $1 ORDER BY titre",
+      [id_compte]
+    );
     res.json(result.rows);
     console.log(result.rows);
     console.log(global.sign);
@@ -174,34 +201,31 @@ app.get("/api/tasks", async (req, res) => {
   }
 });
 
-//add compte
-app.post("/submit-form", (req, res) => {
-  const idCompte = uuidv4();
-  console.log(idCompte);
-
-  const { nom, prenom, email, password, dateDeNaissance } = req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
-
-  const sqlQuery = "INSERT INTO compte (id_compte, nom, prenom, motdepasse, datedenaissance, email) VALUES ($1, $2, $3, $4, $5, $6)";
-  const values = [idCompte, nom, prenom, password, dateDeNaissance, email];
-
-  client.query(sqlQuery, values, (err, result) => {
-    if (err) {
-      console.error("Erreur lors de l'insertion des données :", err);
-      res.status(500).send("Erreur lors de l'insertion des données");
-    } else {
-      res.status(200).json({ message: "Connexion full", idCompte });
-    }
-  });
-});
-
 //add task
 app.post("/submit-tache", (req, res) => {
-  const { titre, description, etat, priorité, date_debut, date_fin, id_compte } = req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
+  const {
+    titre,
+    description,
+    etat,
+    priorité,
+    date_debut,
+    date_fin,
+    id_compte,
+  } = req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
 
   const id_tache = uuidv4();
   const sqlQuery =
     "INSERT INTO taches (titre, description, etat, priorité, date_debut, date_fin ,id_compte,id_tache) VALUES ($1, $2, $3, $4, $5, $6, $7,$8)";
-  const values = [titre, description, etat, priorité, date_debut, date_fin, id_compte, id_tache];
+  const values = [
+    titre,
+    description,
+    etat,
+    priorité,
+    date_debut,
+    date_fin,
+    id_compte,
+    id_tache,
+  ];
 
   client.query(sqlQuery, values, (err, result) => {
     if (err) {
@@ -216,11 +240,21 @@ app.post("/submit-tache", (req, res) => {
 
 //update task task
 app.post("/update-tache", (req, res) => {
-  const { id_tache, titre, description, etat, priorité, date_debut, date_fin } = req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
+  const { id_tache, titre, description, etat, priorité, date_debut, date_fin } =
+    req.body; // Remplacez champ1, champ2, champ3 par les noms de vos champs de formulaire
 
-  const sqlQuery = "UPDATE taches SET titre = $2, description = $3, etat = $4, priorité = $5, date_debut = $6, date_fin = $7 WHERE id_tache = $1";
+  const sqlQuery =
+    "UPDATE taches SET titre = $2, description = $3, etat = $4, priorité = $5, date_debut = $6, date_fin = $7 WHERE id_tache = $1";
 
-  const values = [id_tache, titre, description, etat, priorité, date_debut, date_fin];
+  const values = [
+    id_tache,
+    titre,
+    description,
+    etat,
+    priorité,
+    date_debut,
+    date_fin,
+  ];
 
   client.query(sqlQuery, values, (err, result) => {
     if (err) {
